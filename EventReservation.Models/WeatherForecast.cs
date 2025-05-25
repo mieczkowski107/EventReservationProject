@@ -1,4 +1,4 @@
-namespace EventReservation.App;
+namespace EventReservation.Models;
 
 public class WeatherForecast
 {

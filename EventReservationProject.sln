@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35806.99 d17.13
+VisualStudioVersion = 17.13.35806.99
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventReservation.App", "EventReservation.App\EventReservation.App.csproj", "{9C4848E0-7BF7-4A47-A01D-990FF831B59D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventReservation.Models", "EventReservation.Models\EventReservation.Models.csproj", "{66790BA6-F26A-4EE7-8FA8-FF8809B8F071}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventReservation.DataAccess", "EventReservation.DataAccess\EventReservation.DataAccess.csproj", "{88A1AD29-C584-4356-9988-DEDBCD947658}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{9C4848E0-7BF7-4A47-A01D-990FF831B59D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C4848E0-7BF7-4A47-A01D-990FF831B59D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C4848E0-7BF7-4A47-A01D-990FF831B59D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66790BA6-F26A-4EE7-8FA8-FF8809B8F071}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66790BA6-F26A-4EE7-8FA8-FF8809B8F071}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66790BA6-F26A-4EE7-8FA8-FF8809B8F071}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66790BA6-F26A-4EE7-8FA8-FF8809B8F071}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88A1AD29-C584-4356-9988-DEDBCD947658}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88A1AD29-C584-4356-9988-DEDBCD947658}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88A1AD29-C584-4356-9988-DEDBCD947658}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88A1AD29-C584-4356-9988-DEDBCD947658}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
