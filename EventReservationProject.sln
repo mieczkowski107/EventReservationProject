@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventReservation.Models", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventReservation.DataAccess", "EventReservation.DataAccess\EventReservation.DataAccess.csproj", "{88A1AD29-C584-4356-9988-DEDBCD947658}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utility", "Utility\Utility.csproj", "{B9593201-9F3B-4636-AC3B-1D1D9C60DE4E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{88A1AD29-C584-4356-9988-DEDBCD947658}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88A1AD29-C584-4356-9988-DEDBCD947658}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88A1AD29-C584-4356-9988-DEDBCD947658}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9593201-9F3B-4636-AC3B-1D1D9C60DE4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9593201-9F3B-4636-AC3B-1D1D9C60DE4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9593201-9F3B-4636-AC3B-1D1D9C60DE4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9593201-9F3B-4636-AC3B-1D1D9C60DE4E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
