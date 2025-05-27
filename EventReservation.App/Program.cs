@@ -62,8 +62,12 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
 
-       
-        builder.Services.AddSwaggerGen();
+
+        builder.Services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "Event Reservation API", Version = "v1" });
+
+        });
 
         // Uncomment the following lines to enable Swagger with JWT authentication and comment out the above AddSwaggerGen call
         /* 
@@ -102,7 +106,11 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(options =>
+            {
+                options.DisplayRequestDuration();
+
+            });
         }
 
         app.UseHttpsRedirection();
