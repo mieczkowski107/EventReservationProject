@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 namespace EventReservation.App;
 
@@ -21,7 +22,7 @@ public class Program
             options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection"))
                 .EnableSensitiveDataLogging());
         builder.Services.AddSingleton<TokenProvider>();
-        
+
         builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
                 {
                     options.Password.RequireDigit = false;
@@ -32,8 +33,8 @@ public class Program
                 }
             )
             .AddEntityFrameworkStores<AppDbContext>();
-        
-        
+
+
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -41,25 +42,59 @@ public class Program
             options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme; 
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidateAudience = true,  
+                    ValidateAudience = true,
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-                    ValidateLifetime = true
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero // No toleration for tokens that are in the past
                 };
             });
         builder.Services.AddAuthorization();
-        
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
+
+       
         builder.Services.AddSwaggerGen();
+
+        // Uncomment the following lines to enable Swagger with JWT authentication and comment out the above AddSwaggerGen call
+        /* 
+          builder.Services.AddSwaggerGen(option =>
+          {
+              option.SwaggerDoc("v1", new OpenApiInfo { Title = "Event Reservation API", Version = "v1" });
+              option.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+              {
+                  In = ParameterLocation.Header,
+                  Description = "Please enter a valid token",
+                  Name = "JWT Authorization",
+                  Type = SecuritySchemeType.Http,
+                  BearerFormat = "JWT",
+                  Scheme = JwtBearerDefaults.AuthenticationScheme
+              });
+              option.AddSecurityRequirement(new OpenApiSecurityRequirement
+              {
+                  {
+                      new OpenApiSecurityScheme
+                      {
+                          Reference = new OpenApiReference
+                          {
+                              Type=ReferenceType.SecurityScheme,
+                              Id=JwtBearerDefaults.AuthenticationScheme
+                          }
+                      },
+                      new string[]{}
+                  }
+              });
+          });
+        */
 
         var app = builder.Build();
 
