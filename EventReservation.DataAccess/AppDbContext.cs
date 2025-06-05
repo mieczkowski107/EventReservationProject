@@ -8,13 +8,17 @@ namespace EventReservation.DataAccess;
 public class AppDbContext : IdentityDbContext<AppUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
+
+    public DbSet<Event> Event { get; set; }
+    public DbSet<Session> Session { get; set; }
+    public DbSet<SessionLimit> SessionLimit { get; set; }
+    public DbSet<Registration> Registration { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         var boolConverter = new BoolToZeroOneConverter<int>();
 
-        // Apply Oracle-safe conversions
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entity.GetProperties())

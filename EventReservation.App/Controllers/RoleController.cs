@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Utility;
 
 namespace EventReservation.App.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/roles")]
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = true)]
+[Authorize(Roles = nameof(Roles.Admin)]
 public class RoleController(RoleManager<IdentityRole> roleManager) : Controller
 {
     [HttpGet]

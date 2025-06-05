@@ -3,13 +3,14 @@ using System.Security.Claims;
 using EventReservation.App.Services;
 using EventReservation.Models;
 using EventReservation.Models.DTO.UserDTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Utility;
 
 namespace EventReservation.App.Controllers;
 
-[Route("api/[controller]")]
+[Route("api/users")]
 [ApiController]
 public class UserController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, TokenProvider tokenProvider) : ControllerBase
 {
@@ -64,11 +65,12 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
         {
             return BadRequest(result.Errors);
         }
-        await userManager.AddToRoleAsync(user, Roles.Client.ToString());
+        await userManager.AddToRoleAsync(user, nameof(Roles.Client));
         return Ok();
     }
 
     [HttpPost("register-admin")]
+    [Authorize(Roles = nameof(Roles.Admin))]
     public async Task<IActionResult> RegisterAdmin([FromBody] RegisterRequest registerRequest)
     {
         if (!registerRequest.ArePasswordsEqual())
@@ -90,7 +92,7 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
             return BadRequest(result.Errors);
         }
 
-        await userManager.AddToRoleAsync(user, Roles.Admin.ToString());
+        await userManager.AddToRoleAsync(user, nameof(Roles.Admin));
 
         return Ok();
     }
@@ -101,7 +103,7 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
         var user = await userManager.FindByEmailAsync(model.Email!);
         if (user == null)
         {
-            return BadRequest();
+            return BadRequest("User not found.");
         }
         var result = await signInManager.CheckPasswordSignInAsync(user, model.Password!, false);
         if (!result.Succeeded)
@@ -126,7 +128,6 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
     [HttpPost("logout")]
     public IActionResult Logout()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return Ok();
     }
 
@@ -134,7 +135,7 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
     /*
       TODO: MAYBE(Ordered by priority[high->low]): Change password, change role,
                                                    reset password, confirm email,
-                                                   change email, delete account,get
-                                                   all users, change data
+                                                   change email, delete account,
+                                                   get all users, change personal data
     */
 }
