@@ -8,7 +8,7 @@ namespace EventReservation.App.Controllers;
 [Route("api/roles")]
 [ApiController]
 [ApiExplorerSettings(IgnoreApi = true)]
-[Authorize(Roles = nameof(Roles.Admin)]
+[Authorize(Roles = nameof(Roles.Admin))]
 public class RoleController(RoleManager<IdentityRole> roleManager) : Controller
 {
     [HttpGet]
