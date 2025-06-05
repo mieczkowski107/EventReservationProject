@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace EventReservation.Models.DTO;
+namespace EventReservation.Models.DTO.Event;
 
 public class EventDto
 {
