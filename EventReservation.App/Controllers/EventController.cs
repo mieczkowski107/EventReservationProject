@@ -1,6 +1,6 @@
 ﻿using EventReservation.DataAccess;
 using EventReservation.Models;
-using EventReservation.Models.DTO;
+using EventReservation.Models.DTO.Event;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,14 +12,15 @@ namespace EventReservation.App.Controllers;
 public class EventController(AppDbContext context) : ControllerBase
 {
    [HttpGet]
-   public async Task<IActionResult> GetEvents()
+   public async Task<IActionResult> GetEventsAsync()
    {
       var allEvents = await context.Event.ToListAsync();
+      //TODO: DTO
       return Ok(allEvents.Count == 0 ? [] : allEvents);
    }
 
    [HttpGet("{id:guid}")]
-   public async Task<IActionResult> GetEvent(Guid id) // PL/SQL: Procedura
+   public async Task<IActionResult> GetSingleEventAsync(Guid id) // PL/SQL: Procedura
    {
       var eventFromDb = await context.Event.FindAsync(id);
       if (eventFromDb == null)
@@ -44,7 +45,7 @@ public class EventController(AppDbContext context) : ControllerBase
    }
 
    [HttpPost]
-   public async Task<IActionResult> CreateEvent([FromBody] EventDto newEvent) // PL/SQL: Procedura
+   public async Task<IActionResult> CreateEventAsync([FromBody] EventDto newEvent) // PL/SQL: Procedura
    {
       var createdEvent = new Event
       {
@@ -62,7 +63,7 @@ public class EventController(AppDbContext context) : ControllerBase
       };
       await context.Event.AddAsync(createdEvent);   
       await context.SaveChangesAsync();
-      return CreatedAtAction(nameof(GetEvent), new { id = createdEvent.Id }, createdEvent);
+      return CreatedAtAction(nameof(GetSingleEventAsync), new { id = createdEvent.Id }, newEvent);
    }
 
    [HttpPut("{id:guid}")]
