@@ -13,5 +13,6 @@ public class SessionDto
     [Required][MaxLength(50)] public string? Name { get; set; }
     [Required][MaxLength(500)] public string? Description { get; set; }
     [Required] public DateTime StartTime { get; set; }
-    [Required] public int Duration { get; set; } // Duration in minutes
+    [Required][Range(1, 1440, ErrorMessage = "Duration must be between 1 and 1440 minutes (24 hours).")] 
+    public int Duration { get; set; } // Duration in minutes
 }
