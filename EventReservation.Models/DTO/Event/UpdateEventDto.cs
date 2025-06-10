@@ -1,19 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 
 namespace EventReservation.Models.DTO.Event;
 
 public class UpdateEventDto
 {
-    [Required] [MaxLength(50)] public string? Name { get; set; }
-    [Required] [MaxLength(500)] public string? Description { get; set; }
-    [Required] public DateTime StartTime { get; set; }
-    [Required] public DateTime EndTime { get; set; }
-    [Required] [MaxLength(50)] public string? Location { get; set; }
-    [Required] [MaxLength(50)] public string? EventEmail { get; set; }
-    [Required] public bool IsOverLappingAllowed { get; set; }
-    [Required] public string? CoordinatorName { get; set; }
-    [Required] public string? CoordinatorSurname { get; set; }
-    [Required] public string? CoordinatorPhone { get; set; }
+    [MaxLength(50)] public string? Name { get; set; }
+    [MaxLength(500)] public string? Description { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    [MaxLength(50)] public string? Location { get; set; }
+    [MaxLength(50)] public string? EventEmail { get; set; }
+    public bool IsOverLappingAllowed { get; set; }
+    public string? CoordinatorName { get; set; }
+    public string? CoordinatorSurname { get; set; }
+    public string? CoordinatorPhone { get; set; }
 }
