@@ -9,20 +9,33 @@ namespace EventReservation.App.Controllers;
 [Route("api/events")]
 [ApiController]
 //[Authorize(Roles = nameof(Roles.Admin))]
-public class EventController(AppDbContext context) : ControllerBase
+public class EventController(AppDbContext dbContext) : ControllerBase
 {
    [HttpGet]
-   public async Task<IActionResult> GetEventsAsync()
+   public async Task<IActionResult> GetEvents()
    {
-      var allEvents = await context.Event.ToListAsync();
-      //TODO: DTO
-      return Ok(allEvents.Count == 0 ? [] : allEvents);
+      var allEvents = await dbContext.Event.ToListAsync();
+      var eventsDto = allEvents.Select(x => new EventDto
+      {
+         Id = x.Id,
+         Name = x.Name,
+         Description = x.Description,
+         StartTime = x.StartTime,
+         EndTime = x.EndTime,
+         Location = x.Location,
+         EventEmail = x.EventEmail,
+         IsOverLappingAllowed = x.IsOverLappingAllowed,
+         CoordinatorName = x.CoordinatorName,
+         CoordinatorSurname = x.CoordinatorSurname,
+         CoordinatorPhone = x.CoordinatorPhone,
+      });
+      return Ok(eventsDto);
    }
 
    [HttpGet("{id:guid}")]
-   public async Task<IActionResult> GetSingleEventAsync(Guid id) // PL/SQL: Procedura
+   public async Task<IActionResult> GetEvent(Guid id) // PL/SQL: Procedura
    {
-      var eventFromDb = await context.Event.FindAsync(id);
+      var eventFromDb = await dbContext.Event.FindAsync(id);
       if (eventFromDb == null)
       {
          return NotFound("Event not found");
@@ -45,7 +58,7 @@ public class EventController(AppDbContext context) : ControllerBase
    }
 
    [HttpPost]
-   public async Task<IActionResult> CreateEventAsync([FromBody] EventDto newEvent) // PL/SQL: Procedura
+   public async Task<IActionResult> CreateEvent([FromBody] EventDto newEvent) // PL/SQL: Procedura
    {
       var createdEvent = new Event
       {
@@ -61,37 +74,52 @@ public class EventController(AppDbContext context) : ControllerBase
          CoordinatorSurname = newEvent.CoordinatorSurname,
          CoordinatorPhone = newEvent.CoordinatorPhone,
       };
-      await context.Event.AddAsync(createdEvent);   
-      await context.SaveChangesAsync();
-      return CreatedAtAction(nameof(GetSingleEventAsync), new { id = createdEvent.Id }, newEvent);
+      await dbContext.Event.AddAsync(createdEvent);   
+      await dbContext.SaveChangesAsync();
+        //TODO: Should return DTO, not Entity
+        return CreatedAtAction(nameof(GetEvent), new { id = createdEvent.Id }, createdEvent);
    }
 
    [HttpPut("{id:guid}")]
    public async Task<IActionResult> UpdateEvent(Guid id,[FromBody] UpdateEventDto updatedEvent) // PL/SQL: Procedura
    {
-      var eventFromDb = await context.Event.FindAsync(id);
+      var eventFromDb = await dbContext.Event.FindAsync(id);
       if (eventFromDb == null)
       {
          return NotFound("Event not found");
       }
       //TODO: Pamiętać o sprawdzaniu timestampa.
       // Cel: Unikanie 'podwójnego' aktualizowanai tej samej encji np. przez dwóch adminów w tym samym czasie 
-      context.Entry(eventFromDb).CurrentValues.SetValues(updatedEvent);
-      await context.SaveChangesAsync();
-      return Ok(eventFromDb);
+      dbContext.Entry(eventFromDb).CurrentValues.SetValues(updatedEvent);
+      await dbContext.SaveChangesAsync();
+      var eventDto = new EventDto
+      {
+         Id = eventFromDb.Id,
+         Name = eventFromDb.Name,
+         Description = eventFromDb.Description,
+         StartTime = eventFromDb.StartTime,
+         EndTime = eventFromDb.EndTime,
+         Location = eventFromDb.Location,
+         EventEmail = eventFromDb.EventEmail,
+         IsOverLappingAllowed = eventFromDb.IsOverLappingAllowed,
+         CoordinatorName = eventFromDb.CoordinatorName,
+         CoordinatorSurname = eventFromDb.CoordinatorSurname,
+         CoordinatorPhone = eventFromDb.CoordinatorPhone,
+      };
+      return Ok(eventDto);
    }
 
    [HttpDelete("{id:guid}")]
    public async Task<IActionResult> DeleteEvent(Guid id) // PL/SQL: Procedura
    {
-      var eventFromDb = await context.Event.FindAsync(id);
+      var eventFromDb = await dbContext.Event.FindAsync(id);
       if (eventFromDb == null)
       {
          return NotFound("Event not found");
       }
-      context.Event.Remove(eventFromDb);
-      await context.SaveChangesAsync();
-      return Ok();
+      dbContext.Event.Remove(eventFromDb);
+      await dbContext.SaveChangesAsync();
+      return NoContent();
    }
    
 }
