@@ -12,7 +12,10 @@ namespace EventReservation.App.Controllers;
 
 [Route("api/users")]
 [ApiController]
-public class UserController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, TokenProvider tokenProvider) : ControllerBase
+public class UserController(
+    UserManager<AppUser> userManager,
+    SignInManager<AppUser> signInManager,
+    TokenProvider tokenProvider) : ControllerBase
 {
 
     [HttpGet("profile")]
@@ -23,11 +26,13 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
         {
             return Unauthorized();
         }
+
         var user = await userManager.FindByIdAsync(userId);
         if (user == null)
         {
             return NotFound();
         }
+
         var profile = new UserInfo
         {
             Email = user.Email,
@@ -47,10 +52,12 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
         {
             return BadRequest("User already exists with this email");
         }
+
         if (!registerRequest.ArePasswordsEqual())
         {
             return BadRequest("Passwords do not match");
         }
+
         var user = new AppUser
         {
             UserName = registerRequest.Email,
@@ -65,6 +72,7 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
         {
             return BadRequest(result.Errors);
         }
+
         await userManager.AddToRoleAsync(user, nameof(Roles.Client));
         return Ok();
     }
@@ -77,6 +85,7 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
         {
             return BadRequest("Passwords do not match");
         }
+
         var user = new AppUser
         {
             UserName = registerRequest.Email,
@@ -105,6 +114,7 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
         {
             return BadRequest("User not found.");
         }
+
         var result = await signInManager.CheckPasswordSignInAsync(user, model.Password!, false);
         if (!result.Succeeded)
         {
@@ -130,12 +140,6 @@ public class UserController(UserManager<AppUser> userManager, SignInManager<AppU
     {
         return Ok();
     }
-
-    //TODO: Refresh tokens
-    /*
-      TODO: MAYBE(Ordered by priority[high->low]): Change password, change role,
-                                                   reset password, confirm email,
-                                                   change email, delete account,
-                                                   get all users, change personal data
-    */
 }
+
+  
