@@ -21,7 +21,10 @@ public class Program
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection"))
                 .EnableSensitiveDataLogging());
+
         builder.Services.AddSingleton<TokenProvider>();
+        builder.Services.AddTransient<DbSeeder>();
+
 
         builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
                 {
@@ -63,14 +66,14 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
 
 
-        builder.Services.AddSwaggerGen(options =>
+      /*  builder.Services.AddSwaggerGen(options =>
         {
             options.SwaggerDoc("v1", new OpenApiInfo { Title = "Event Reservation API", Version = "v1" });
 
-        });
+        });*/
 
         // Uncomment the following lines to enable Swagger with JWT authentication and comment out the above AddSwaggerGen call
-        /* 
+         
           builder.Services.AddSwaggerGen(option =>
           {
               option.SwaggerDoc("v1", new OpenApiInfo { Title = "Event Reservation API", Version = "v1" });
@@ -98,7 +101,7 @@ public class Program
                   }
               });
           });
-        */
+        
 
         var app = builder.Build();
 
@@ -121,6 +124,15 @@ public class Program
 
         app.MapControllers();
 
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            var seeder = services.GetRequiredService<DbSeeder>();
+            seeder.Seed();
+        }
+
         app.Run();
+
+       
     }
 }
