@@ -3,6 +3,7 @@ using System;
 using EventReservation.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Oracle.EntityFrameworkCore.Metadata;
 
@@ -11,9 +12,11 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace EventReservation.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250613122855_ChangeMaxLenghtOfNameInEventEntity")]
+    partial class ChangeMaxLenghtOfNameInEventEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,13 +52,6 @@ namespace EventReservation.DataAccess.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("NVARCHAR2(50)");
-
-                    b.Property<int>("IntId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("INT_ID");
-
-                    OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IntId"));
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -97,9 +93,6 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAlternateKey("IntId")
-                        .HasName("AK_AspNetUsers_IntId");
-
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -113,11 +106,9 @@ namespace EventReservation.DataAccess.Migrations
 
             modelBuilder.Entity("EventReservation.Models.Event", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)");
-
-                    OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("RAW(16)");
 
                     b.Property<string>("CoordinatorName")
                         .IsRequired()
@@ -169,12 +160,6 @@ namespace EventReservation.DataAccess.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TIMESTAMP(7)");
 
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("RAW(8)");
-
                     b.HasKey("Id");
 
                     b.ToTable("Event");
@@ -182,11 +167,12 @@ namespace EventReservation.DataAccess.Migrations
 
             modelBuilder.Entity("EventReservation.Models.Registration", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)");
+                        .HasColumnType("RAW(16)");
 
-                    OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("AppUserId")
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TIMESTAMP(7)");
@@ -194,31 +180,29 @@ namespace EventReservation.DataAccess.Migrations
                     b.Property<int>("RegistrationStatus")
                         .HasColumnType("NUMBER(10)");
 
-                    b.Property<int>("SessionId")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("RAW(16)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TIMESTAMP(7)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("RAW(16)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SessionId");
+                    b.HasIndex("AppUserId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("SessionId");
 
                     b.ToTable("Registration");
                 });
 
             modelBuilder.Entity("EventReservation.Models.Session", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)");
-
-                    OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("RAW(16)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TIMESTAMP(7)");
@@ -231,8 +215,8 @@ namespace EventReservation.DataAccess.Migrations
                     b.Property<int>("Duration")
                         .HasColumnType("NUMBER(10)");
 
-                    b.Property<int>("EventId")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("RAW(16)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -245,12 +229,6 @@ namespace EventReservation.DataAccess.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TIMESTAMP(7)");
 
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("RAW(8)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("EventId");
@@ -260,11 +238,9 @@ namespace EventReservation.DataAccess.Migrations
 
             modelBuilder.Entity("EventReservation.Models.SessionLimit", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)");
-
-                    OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("RAW(16)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TIMESTAMP(7)");
@@ -275,17 +251,11 @@ namespace EventReservation.DataAccess.Migrations
                     b.Property<int>("MaxParticipants")
                         .HasColumnType("NUMBER(10)");
 
-                    b.Property<int>("SessionId")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("RAW(16)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TIMESTAMP(7)");
-
-                    b.Property<byte[]>("Version")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("RAW(8)");
 
                     b.HasKey("Id");
 
@@ -429,16 +399,13 @@ namespace EventReservation.DataAccess.Migrations
 
             modelBuilder.Entity("EventReservation.Models.Registration", b =>
                 {
+                    b.HasOne("EventReservation.Models.AppUser", "AppUser")
+                        .WithMany()
+                        .HasForeignKey("AppUserId");
+
                     b.HasOne("EventReservation.Models.Session", "Session")
                         .WithMany()
                         .HasForeignKey("SessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EventReservation.Models.AppUser", "AppUser")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .HasPrincipalKey("IntId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

@@ -1,4 +1,5 @@
-﻿using EventReservation.DataAccess;
+﻿using EventReservation.App.Services.Interfaces;
+using EventReservation.DataAccess;
 using EventReservation.Models;
 using EventReservation.Models.DTO.Session;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace EventReservation.App.Controllers;
 
 [ApiController]
 //[Authorize(Roles = nameof(Roles.Admin))]
-public class SessionController(AppDbContext dbContext) : ControllerBase
+public class SessionController(AppDbContext dbContext, IOverlappingService overlappingService) : ControllerBase
 {
     [HttpGet("api/event/{eventId:int}/sessions")]
     public async Task<IActionResult> GetSessions(int eventId)
@@ -57,10 +58,8 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
         {
             return BadRequest("No event");
         }
-        var createdSessionStartTime = newSession.StartTime;
-        var createdSessionEndTime = createdSessionStartTime.AddMinutes(newSession.Duration);
 
-        if (!(newSession.StartTime >= eventFromDb.StartTime && createdSessionEndTime <= eventFromDb.EndTime))
+        if (!IsSessionTimeWithinEventRange(eventFromDb, newSession))
         {
             return BadRequest("Invalid session time");
         }
@@ -68,12 +67,9 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
         if (!eventFromDb.IsOverLappingAllowed && eventFromDb.Sessions != null)
         {
             var sessions = eventFromDb.Sessions;
-            foreach (var session in sessions)
+            if (overlappingService.AreSessionsOverlapping(sessions, newSession))
             {
-                if(IsSessionOverlapping(session, newSession))
-                {
-                    return BadRequest("Session time overlaps with existing session");
-                }
+                return BadRequest("Session time overlaps with existing session");
             }
         }
 
@@ -107,14 +103,26 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
     [HttpPut("api/sessions/{sessionId:int}")]
     public async Task<IActionResult> UpdateSession(int sessionId, [FromBody] UpdateSessionDto updatedSession)
     {
-        var sessionFromDb = await dbContext.Session.FindAsync(sessionId);
-        if (sessionFromDb == null)
-        {
+        var sessionFromDb = await dbContext.Session
+                                 .Include(s => s.Event)
+                                 .ThenInclude(e => e.Sessions)
+                                 .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+        if (sessionFromDb == null || sessionFromDb.Event == null)
             return NotFound();
-        }
-        //TODO: Pamiętać o sprawdzaniu timestampa.
-        //Cel: Unikanie 'podwójnego' aktualizowanai tej samej encji np. przez dwóch adminów w tym samym czasie 
-        dbContext.Entry(sessionFromDb).CurrentValues.SetValues(updatedSession);
+
+        MapSessionDtoToEntity(updatedSession, sessionFromDb);
+
+        if (!IsSessionTimeWithinEventRange(sessionFromDb.Event, sessionFromDb))
+            return BadRequest("Invalid session time");
+
+        var otherSessions = sessionFromDb.Event.Sessions
+                                                .Where(s => s.Id != sessionId)
+                                                .ToList();
+
+        if (overlappingService.AreSessionsOverlapping(otherSessions, sessionFromDb))
+            return BadRequest("Session time overlaps with existing session");
+
         await dbContext.SaveChangesAsync();
         return Ok(sessionFromDb);
     }
@@ -133,12 +141,28 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
         return NoContent();
     }
 
-    private bool IsSessionOverlapping(Session session, SessionDto newSession)
+    private void MapSessionDtoToEntity(UpdateSessionDto sessionDto, Session session)
     {
-        var sessionStartTime = session.StartTime;
-        var sessionEndTime = session.StartTime.AddMinutes(session.Duration);
-        var newSessionStartTime = newSession.StartTime;
-        var newSessionEndTime = newSession.StartTime.AddMinutes(newSession.Duration);
-        return newSessionStartTime < sessionEndTime && newSessionEndTime > sessionStartTime;
+        session.Name = sessionDto.Name;
+        session.Description = sessionDto.Description;
+        session.StartTime = sessionDto.StartTime ?? session.StartTime;
+        session.Duration = sessionDto.Duration ?? session.Duration;
     }
+    private bool IsSessionTimeWithinEventRange(Event eventFromDb, SessionDto newSession)
+    {
+        var createdSessionStartTime = newSession.StartTime;
+        var createdSessionEndTime = createdSessionStartTime.AddMinutes(newSession.Duration);
+
+        return createdSessionStartTime >= eventFromDb.StartTime &&
+               createdSessionEndTime <= eventFromDb.EndTime;
+    }
+    private bool IsSessionTimeWithinEventRange(Event eventFromDb, Session newSession)
+    {
+        var createdSessionStartTime = newSession.StartTime;
+        var createdSessionEndTime = createdSessionStartTime.AddMinutes(newSession.Duration);
+
+        return createdSessionStartTime >= eventFromDb.StartTime &&
+               createdSessionEndTime <= eventFromDb.EndTime;
+    }
+
 }

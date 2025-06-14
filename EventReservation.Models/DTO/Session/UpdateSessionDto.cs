@@ -6,8 +6,7 @@ public class UpdateSessionDto
 {
      [MaxLength(50)] public string? Name { get; set; }
      [MaxLength(500)] public string? Description { get; set; }
-     public DateTime StartTime { get; set; }
-     public int Duration { get; set; } // Duration in minutes
-     public DateTime UpdatedAt { get; set; }
-    [Range(1, 1000)] public int MaxParticipants { get; set; }
+     public DateTime? StartTime { get; set; }
+     public int? Duration { get; set; } // Duration in minutes
+    //[Range(1, 1000)] public int MaxParticipants { get; set; }
 }
