@@ -4,7 +4,7 @@ namespace EventReservation.Models.DTO.Event;
 
 public class EventDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     [Required] [MaxLength(50)] public string? Name { get; set; }
     [Required] [MaxLength(500)] public string? Description { get; set; }
     [Required] public DateTime StartTime { get; set; }

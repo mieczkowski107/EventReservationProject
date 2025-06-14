@@ -24,4 +24,8 @@
       <ProjectReference Include="..\EventReservation.Models\EventReservation.Models.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
 </Project>

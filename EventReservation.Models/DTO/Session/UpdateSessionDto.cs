@@ -9,4 +9,5 @@ public class UpdateSessionDto
      public DateTime StartTime { get; set; }
      public int Duration { get; set; } // Duration in minutes
      public DateTime UpdatedAt { get; set; }
+    [Range(1, 1000)] public int MaxParticipants { get; set; }
 }

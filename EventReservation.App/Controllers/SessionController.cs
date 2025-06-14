@@ -10,10 +10,11 @@ namespace EventReservation.App.Controllers;
 //[Authorize(Roles = nameof(Roles.Admin))]
 public class SessionController(AppDbContext dbContext) : ControllerBase
 {
-    [HttpGet("api/event/{eventId:guid}/sessions")]
-    public async Task<IActionResult> GetSessions(Guid eventId)
+    [HttpGet("api/event/{eventId:int}/sessions")]
+    public async Task<IActionResult> GetSessions(int eventId)
     {
         var sessions = await dbContext.Session.Where(s => s.EventId == eventId).ToListAsync();
+        //TODO: Dodać tu sessionLimit, bo nie mam pomysłu jak
         var sessionDto = sessions.Select(x => new SessionDto
         {
             Id = x.Id,
@@ -25,10 +26,13 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
         return Ok(sessionDto);
     }
 
-    [HttpGet("api/sessions/{sessionId:guid}")]
-    public async Task<IActionResult> GetSingleSession(Guid sessionId)
+    [HttpGet("api/sessions/{sessionId:int}")]
+    public async Task<IActionResult> GetSingleSession(int sessionId)
     {
         var session = await dbContext.Session.FindAsync(sessionId);
+        // Wyświetlenie limitu uczestników - działa, ale zastanawiam się czy nie można zrobić jakoś include do session bez drugiego zapytania
+        var sessionLimit = await dbContext.SessionLimit.Where(sl => sl.SessionId == sessionId).FirstOrDefaultAsync();
+
         if (session == null)
         {
             return NotFound();
@@ -40,12 +44,13 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
             Name = session.Name,
             StartTime = session.StartTime,
             Duration = session.Duration,
+            MaxParticipants = sessionLimit.MaxParticipants,
         };
         return Ok(sessionDto);
     }
 
-    [HttpPost("api/event/{eventId:guid}/sessions")]
-    public async Task<IActionResult> CreateSession(Guid eventId, [FromBody] SessionDto newSession)
+    [HttpPost("api/event/{eventId:int}/sessions")]
+    public async Task<IActionResult> CreateSession(int eventId, [FromBody] SessionDto newSession)
     {
         var eventFromDb = await dbContext.Event.Include(e => e.Sessions).Where(e => e.Id == eventId).FirstOrDefaultAsync();
         if (eventFromDb == null)
@@ -54,13 +59,12 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
         }
         var createdSessionStartTime = newSession.StartTime;
         var createdSessionEndTime = createdSessionStartTime.AddMinutes(newSession.Duration);
-        //TODO: Sprawdzić poprawność działania
+
         if (!(newSession.StartTime >= eventFromDb.StartTime && createdSessionEndTime <= eventFromDb.EndTime))
         {
             return BadRequest("Invalid session time");
         }
 
-        //TODO: Sprawdzić, poprawność działania 
         if (!eventFromDb.IsOverLappingAllowed && eventFromDb.Sessions != null)
         {
             var sessions = eventFromDb.Sessions;
@@ -81,14 +85,27 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
             StartTime = newSession.StartTime,
             Duration = newSession.Duration,
         };
+
         await dbContext.Session.AddAsync(createdSession);
         await dbContext.SaveChangesAsync();
+
+        var sessionLimit = new SessionLimit
+        {
+            SessionId = createdSession.Id,
+            MaxParticipants = newSession.MaxParticipants,
+            CurrentReserved = 0
+        };
+
+        await dbContext.SessionLimit.AddAsync(sessionLimit);
+        await dbContext.SaveChangesAsync();
+
         //TODO: Zwrócić DTO zamiast encji
-        return CreatedAtAction(nameof(GetSingleSession), new { sessionId = createdSession.Id }, createdSession);
+        //return CreatedAtAction(nameof(GetSingleSession), new { sessionId = createdSession.Id }, createdSession);
+        return Ok(newSession);
     }
 
-    [HttpPut("api/sessions/{sessionId:guid}")]
-    public async Task<IActionResult> UpdateSession(Guid sessionId, [FromBody] UpdateSessionDto updatedSession)
+    [HttpPut("api/sessions/{sessionId:int}")]
+    public async Task<IActionResult> UpdateSession(int sessionId, [FromBody] UpdateSessionDto updatedSession)
     {
         var sessionFromDb = await dbContext.Session.FindAsync(sessionId);
         if (sessionFromDb == null)
@@ -102,8 +119,8 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
         return Ok(sessionFromDb);
     }
 
-    [HttpDelete("api/sessions/{sessionId:guid}")]
-    public async Task<IActionResult> DeleteSession(Guid sessionId)
+    [HttpDelete("api/sessions/{sessionId:int}")]
+    public async Task<IActionResult> DeleteSession(int sessionId)
     {
         var session = await dbContext.Session.FindAsync(sessionId);
         if (session == null)

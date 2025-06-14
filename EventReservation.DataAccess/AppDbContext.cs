@@ -40,5 +40,24 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 }
             }
         }
+
+        modelBuilder.Entity<AppUser>(b =>
+        {
+            b.Property(u => u.IntId)
+             .HasColumnName("INT_ID")
+             .ValueGeneratedOnAdd()
+             .UseIdentityColumn();
+
+            b.HasAlternateKey(u => u.IntId)
+             .HasName("AK_AspNetUsers_IntId");
+        });
+        modelBuilder.Entity<Registration>(b =>
+        {
+            b.HasOne(r => r.AppUser)
+             .WithMany()
+             .HasForeignKey(r => r.UserId)
+             .HasPrincipalKey(u => u.IntId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

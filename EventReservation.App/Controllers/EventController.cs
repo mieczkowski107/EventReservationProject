@@ -32,8 +32,8 @@ public class EventController(AppDbContext dbContext) : ControllerBase
       return Ok(eventsDto);
    }
 
-   [HttpGet("{id:guid}")]
-   public async Task<IActionResult> GetEvent(Guid id) // PL/SQL: Procedura
+   [HttpGet("{id:int}")]
+   public async Task<IActionResult> GetEvent(int id) // PL/SQL: Procedura
    {
       var eventFromDb = await dbContext.Event.FindAsync(id);
       if (eventFromDb == null)
@@ -80,8 +80,8 @@ public class EventController(AppDbContext dbContext) : ControllerBase
         return CreatedAtAction(nameof(GetEvent), new { id = createdEvent.Id }, createdEvent);
    }
 
-   [HttpPut("{id:guid}")]
-   public async Task<IActionResult> UpdateEvent(Guid id,[FromBody] UpdateEventDto updatedEvent) // PL/SQL: Procedura
+   [HttpPut("{id:int}")]
+   public async Task<IActionResult> UpdateEvent(int id,[FromBody] UpdateEventDto updatedEvent) // PL/SQL: Procedura
    {
       var eventFromDb = await dbContext.Event.FindAsync(id);
       if (eventFromDb == null)
@@ -109,8 +109,8 @@ public class EventController(AppDbContext dbContext) : ControllerBase
       return Ok(eventDto);
    }
 
-   [HttpDelete("{id:guid}")]
-   public async Task<IActionResult> DeleteEvent(Guid id) // PL/SQL: Procedura
+   [HttpDelete("{id:int}")]
+   public async Task<IActionResult> DeleteEvent(int id) // PL/SQL: Procedura
    {
       var eventFromDb = await dbContext.Event.FindAsync(id);
       if (eventFromDb == null)

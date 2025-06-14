@@ -126,6 +126,7 @@ public class UserController(
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email!),
+            new Claim("IntId", user.IntId.ToString())
         };
         var roleClaims = roles.Select(role => new Claim(ClaimTypes.Role, role)).ToList();
         authClaims.AddRange(roleClaims);
