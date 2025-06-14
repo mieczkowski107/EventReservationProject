@@ -63,7 +63,7 @@ public class EventController(AppDbContext dbContext, IOverlappingService overlap
     {
         var createdEvent = new Event
         {
-            Id = Guid.NewGuid(),
+            Id = newEvent.Id,
             Name = newEvent.Name,
             Description = newEvent.Description,
             StartTime = newEvent.StartTime,

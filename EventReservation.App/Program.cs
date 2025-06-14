@@ -25,7 +25,7 @@ public class Program
 
         // Registering services
         builder.Services.AddSingleton<TokenProvider>();
-        builder.Services.AddTransient<DbSeeder>();
+        //builder.Services.AddTransient<DbSeeder>();
         builder.Services.AddScoped<IOverlappingService, OverlappingService>();
 
         //Registering Identity services
@@ -128,12 +128,12 @@ public class Program
 
         app.MapControllers();
 
-        using (var scope = app.Services.CreateScope())
-        {
-            var services = scope.ServiceProvider;
-            var seeder = services.GetRequiredService<DbSeeder>();
-            seeder.Seed();
-        }
+        //using (var scope = app.Services.CreateScope())
+        //{
+        //    var services = scope.ServiceProvider;
+        //    var seeder = services.GetRequiredService<DbSeeder>();
+        //    seeder.Seed();
+        //}
 
         app.Run();
 
