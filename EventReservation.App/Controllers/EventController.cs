@@ -63,7 +63,7 @@ public class EventController(AppDbContext dbContext, IOverlappingService overlap
     {
         var createdEvent = new Event
         {
-            Id = newEvent.Id,
+            Id = Guid.NewGuid(),
             Name = newEvent.Name,
             Description = newEvent.Description,
             StartTime = newEvent.StartTime,
@@ -84,7 +84,7 @@ public class EventController(AppDbContext dbContext, IOverlappingService overlap
     [HttpPatch("{id:guid}")]
     public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] UpdateEventDto updatedEvent) // PL/SQL: Procedura
     {
-        var eventFromDb = await dbContext.Event.Include(s=>s.Sessions).FirstAsync(e => e.Id == id);
+        var eventFromDb = await dbContext.Event.Include(s=>s.Sessions).FirstOrDefaultAsync(e => e.Id == id);
         if (eventFromDb == null)
         {
             return NotFound("Event not found");
@@ -98,17 +98,20 @@ public class EventController(AppDbContext dbContext, IOverlappingService overlap
             }
         }
 
+
+        MapFromDtoToEntity(updatedEvent, eventFromDb);
+
         if (updatedEvent.IsOverLappingAllowed == false && eventFromDb.Sessions != null)
         {
-            if(overlappingService.AreSessionsOverlapping(eventFromDb.Sessions.ToList()))
+            if (overlappingService.AreSessionsOverlapping(eventFromDb.Sessions.ToList()))
             {
+                dbContext.Entry(eventFromDb).State = EntityState.Unchanged; // Reset changes to the event
                 return BadRequest("Overlapping sessions are not allowed for this event. Delete overlapping events to change this property.");
             }
         }
-
-        MapFromDtoToEntity(updatedEvent, eventFromDb);
-        if(overlappingService.AreSessionsOverlapping(eventFromDb.Sessions?.ToList() ?? new List<Session>()))
+        if (overlappingService.AreSessionsOverlapping(eventFromDb.Sessions?.ToList() ?? new List<Session>()))
         {
+            dbContext.Entry(eventFromDb).State = EntityState.Unchanged; // Reset changes to the event
             return BadRequest("Overlapping sessions are not allowed for this event. Delete overlapping events to change this property.");
         }
 
