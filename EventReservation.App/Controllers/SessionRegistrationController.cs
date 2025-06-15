@@ -4,6 +4,7 @@ using EventReservation.App.Services;
 using EventReservation.App.Services.Interfaces;
 using EventReservation.DataAccess;
 using EventReservation.Models;
+using EventReservation.Models.DTO.Page;
 using EventReservation.Models.DTO.Session;
 using EventReservation.Models.DTO.SessionRegistration;
 using Microsoft.AspNetCore.Authorization;
@@ -19,12 +20,59 @@ public class SessionRegistrationController(AppDbContext dbContext, IOverlappingS
 {
     [HttpGet]
     [Route("api/registrations")]
-    public async Task<IActionResult> GetUserRegistration()
+    public async Task<IActionResult> GetUserRegistration(int page = 1, int pageSize = 10)
     {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+
         var userId = UserService.GetUserId(User);
-        var userRegistration = await dbContext.Registration.Include(r=>r.Session).Where(r => r.UserId == userId).ToListAsync();
-        //TODO: DTO
-        return Ok(userRegistration);
+
+        var query = dbContext.Registration
+            .Where(r => r.UserId == userId);
+
+        var totalCount = await query.CountAsync();
+
+        var registrations = await query
+            .Include(r => r.Session)
+                .ThenInclude(s => s.SessionLimit)
+            .OrderBy(r => r.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        //TODO: wywalić niepotrzebne info
+        var items = registrations.Select(r => new GetSessionRegistrationDto
+        {
+            Id = r.Id,
+            UserId = userId,
+            SessionId = r.SessionId,
+            CreatedAt = r.CreatedAt,
+            UpdatedAt = r.UpdatedAt,
+            RegistrationStatus = r.RegistrationStatus,
+            Session = new SessionWithLimitDto
+            {
+                Id = r.Session.Id,              //TODO: brakuje tu EventId, ale trzebaby było dodatkowe Dto do Session, żeby nie mieszać z tamtym kontrolerem
+                Name = r.Session.Name,
+                Description = r.Session.Description,
+                StartTime = r.Session.StartTime,
+                Duration = r.Session.Duration,
+                MaxParticipants = r.Session.SessionLimit?.MaxParticipants ?? 0,
+                CurrentReserved = r.Session.SessionLimit?.CurrentReserved ?? 0
+            }
+        }).ToList();
+
+        var result = new PagedResult<GetSessionRegistrationDto>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            PageCount = (int)Math.Ceiling((double)totalCount / pageSize)
+        };
+
+        //tak było - for reference
+        //var userRegistration = await dbContext.Registration.Include(r=>r.Session).Where(r => r.UserId == userId).ToListAsync();
+        return Ok(result);
     }
     [HttpPost]
     [Route("api/session/{sessionId:int}/registrations")]
@@ -33,7 +81,7 @@ public class SessionRegistrationController(AppDbContext dbContext, IOverlappingS
         var userId = UserService.GetUserId(User);
 
         //TODO: Sprawdź czy sesja nie minęła?
-        //TODO: Rozwiąż sytuację wyścigu w zapisach - ale to zostawiam na pewno Tobie, bo już robiłeś to PUTach
+        //TODO: Rozwiąż sytuację wyścigu w zapisach - później
 
         if (await dbContext.Registration.CountAsync(r => r.UserId == userId && r.SessionId == sessionId) > 0)
         {

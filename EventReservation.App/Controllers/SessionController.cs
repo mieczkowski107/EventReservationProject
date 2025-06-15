@@ -1,6 +1,8 @@
 ﻿using EventReservation.App.Services.Interfaces;
 using EventReservation.DataAccess;
 using EventReservation.Models;
+using EventReservation.Models.DTO.Event;
+using EventReservation.Models.DTO.Page;
 using EventReservation.Models.DTO.Session;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,19 +14,44 @@ namespace EventReservation.App.Controllers;
 public class SessionController(AppDbContext dbContext, IOverlappingService overlappingService) : ControllerBase
 {
     [HttpGet("api/event/{eventId:int}/sessions")]
-    public async Task<IActionResult> GetSessions(int eventId)
+    public async Task<IActionResult> GetSessions(int eventId, int page = 1, int pageSize = 10)
     {
-        var sessions = await dbContext.Session.Where(s => s.EventId == eventId).ToListAsync();
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var totalCount = await dbContext.Session.CountAsync(s => s.EventId == eventId);
+
+        //TODO: dodać index na StartTime, w celu przyspieszenia OrderBy
+
+        var sessions = await dbContext.Session
+            .Where(s => s.EventId == eventId)
+            .Include(s => s.SessionLimit)
+            .OrderBy(s => s.StartTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
         //TODO: Dodać tu sessionLimit, bo nie mam pomysłu jak
-        var sessionDto = sessions.Select(x => new SessionDto
+        var sessionDto = sessions.Select(x => new SessionWithLimitDto
         {
             Id = x.Id,
             Name = x.Name,
             StartTime = x.StartTime,
             Duration = x.Duration,
-        }
-        ).ToList();
-        return Ok(sessionDto);
+            MaxParticipants = x.SessionLimit?.MaxParticipants ?? 0,
+            CurrentReserved = x.SessionLimit?.CurrentReserved ?? 0,
+        }).ToList();
+
+        var result = new PagedResult<SessionWithLimitDto>
+        {
+            Items = sessionDto,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            PageCount = (int)Math.Ceiling((double)totalCount / pageSize)
+        };
+
+        return Ok(result);
     }
 
     [HttpGet("api/sessions/{sessionId:int}")]

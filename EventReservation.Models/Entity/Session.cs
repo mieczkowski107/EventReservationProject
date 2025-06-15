@@ -16,6 +16,7 @@ public class Session
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public virtual Event? Event { get; set; }
+    public virtual SessionLimit? SessionLimit { get; set; }
 	[Timestamp]
 	public byte[] Version { get; set; }
 }

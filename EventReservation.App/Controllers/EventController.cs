@@ -2,6 +2,8 @@
 using EventReservation.DataAccess;
 using EventReservation.Models;
 using EventReservation.Models.DTO.Event;
+using EventReservation.Models.DTO.Page;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,10 +15,22 @@ namespace EventReservation.App.Controllers;
 public class EventController(AppDbContext dbContext, IOverlappingService overlappingService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetEvents()
+    public async Task<IActionResult> GetEvents(int page = 1, int pageSize = 10)
     {
-        var allEvents = await dbContext.Event.ToListAsync();
-        var eventsDto = allEvents.Select(x => new EventDto
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var totalCount = await dbContext.Event.CountAsync();
+
+        //TODO: dodać index na StartTime, w celu przyspieszenia OrderBy
+
+        var events = await dbContext.Event
+            .OrderBy(e => e.StartTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var eventsDto = events.Select(x => new EventDto
         {
             Id = x.Id,
             Name = x.Name,
@@ -29,8 +43,18 @@ public class EventController(AppDbContext dbContext, IOverlappingService overlap
             CoordinatorName = x.CoordinatorName,
             CoordinatorSurname = x.CoordinatorSurname,
             CoordinatorPhone = x.CoordinatorPhone,
-        });
-        return Ok(eventsDto);
+        }).ToList();
+
+        var result = new PagedResult<EventDto>
+        {
+            Items = eventsDto,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            PageCount = (int)Math.Ceiling((double)totalCount / pageSize)
+        };
+
+        return Ok(result);
     }
 
    [HttpGet("{id:int}")]
