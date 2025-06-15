@@ -95,7 +95,9 @@ public class SessionController(AppDbContext dbContext, IOverlappingService overl
         await dbContext.SessionLimit.AddAsync(sessionLimit);
         await dbContext.SaveChangesAsync();
 
-        //TODO: Zwrócić DTO zamiast encji
+        //TODO: Poprawione Id, bo zwracało z Dto zamiast poprawnego z bazy, nie wiem czy tak czy inaczej to zrobić
+        newSession.Id = createdSession.Id;
+
         //return CreatedAtAction(nameof(GetSingleSession), new { sessionId = createdSession.Id }, createdSession);
         return Ok(newSession);
     }
