@@ -10,8 +10,8 @@ public class Event
     [Required] [MaxLength(500)] public string? Description { get; set; }
     [Required] public DateTime StartTime { get; set; }
     [Required] public DateTime EndTime { get; set; }
-    [Required] [MaxLength(50)] public string? Location { get; set; }
-    [Required] [MaxLength(50)] public string? EventEmail { get; set; }
+    [Required] [MaxLength(100)] public string? Location { get; set; }
+    [Required] [MaxLength(100)] public string? EventEmail { get; set; }
     [Required] public EventSessionStatus EventSessionStatus { get; set; } = EventSessionStatus.Created;
     [Required] public bool IsOverLappingAllowed { get; set; }
     [Required] public string? CoordinatorName { get; set; }
