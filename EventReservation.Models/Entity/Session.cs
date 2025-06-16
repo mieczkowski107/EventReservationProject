@@ -15,8 +15,11 @@ public class Session
     public int Duration { get; set; } // Duration in minutes
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
     public virtual Event? Event { get; set; }
     public virtual SessionLimit? SessionLimit { get; set; }
-	[Timestamp]
+    
+    public virtual ICollection<Registration> Registrations{ get; set; } = new List<Registration>();
+    [Timestamp]
 	public byte[] Version { get; set; }
 }
