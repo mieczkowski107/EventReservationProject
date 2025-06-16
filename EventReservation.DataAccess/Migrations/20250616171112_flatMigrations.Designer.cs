@@ -12,8 +12,8 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace EventReservation.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250616155344_ChaningNamingConevntionForTablesAndColumns")]
-    partial class ChaningNamingConevntionForTablesAndColumns
+    [Migration("20250616171112_flatMigrations")]
+    partial class flatMigrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,37 +28,30 @@ namespace EventReservation.DataAccess.Migrations
             modelBuilder.Entity("EventReservation.Models.AppUser", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("ID");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("ACCESSFAILEDCOUNT");
+                        .HasColumnType("NUMBER(10)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("CONCURRENCYSTAMP");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("Country")
                         .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)")
-                        .HasColumnName("COUNTRY");
+                        .HasColumnType("NVARCHAR2(50)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("NVARCHAR2(256)")
-                        .HasColumnName("EMAIL");
+                        .HasColumnType("NVARCHAR2(256)");
 
                     b.Property<int>("EmailConfirmed")
-                        .HasColumnType("NUMBER(1)")
-                        .HasColumnName("EMAILCONFIRMED");
+                        .HasColumnType("NUMBER(1)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)")
-                        .HasColumnName("FIRSTNAME");
+                        .HasColumnType("NVARCHAR2(50)");
 
                     b.Property<int>("IntId")
                         .ValueGeneratedOnAdd()
@@ -70,51 +63,40 @@ namespace EventReservation.DataAccess.Migrations
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)")
-                        .HasColumnName("LASTNAME");
+                        .HasColumnType("NVARCHAR2(50)");
 
                     b.Property<int>("LockoutEnabled")
-                        .HasColumnType("NUMBER(1)")
-                        .HasColumnName("LOCKOUTENABLED");
+                        .HasColumnType("NUMBER(1)");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("TIMESTAMP(7) WITH TIME ZONE")
-                        .HasColumnName("LOCKOUTEND");
+                        .HasColumnType("TIMESTAMP(7) WITH TIME ZONE");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("NVARCHAR2(256)")
-                        .HasColumnName("NORMALIZEDEMAIL");
+                        .HasColumnType("NVARCHAR2(256)");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("NVARCHAR2(256)")
-                        .HasColumnName("NORMALIZEDUSERNAME");
+                        .HasColumnType("NVARCHAR2(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("PASSWORDHASH");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("PHONENUMBER");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<int>("PhoneNumberConfirmed")
-                        .HasColumnType("NUMBER(1)")
-                        .HasColumnName("PHONENUMBERCONFIRMED");
+                        .HasColumnType("NUMBER(1)");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("SECURITYSTAMP");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<int>("TwoFactorEnabled")
-                        .HasColumnType("NUMBER(1)")
-                        .HasColumnName("TWOFACTORENABLED");
+                        .HasColumnType("NUMBER(1)");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("NVARCHAR2(256)")
-                        .HasColumnName("USERNAME");
+                        .HasColumnType("NVARCHAR2(256)");
 
                     b.HasKey("Id");
 
@@ -127,123 +109,102 @@ namespace EventReservation.DataAccess.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
-                        .HasFilter("\"NORMALIZEDUSERNAME\" IS NOT NULL");
+                        .HasFilter("\"NormalizedUserName\" IS NOT NULL");
 
-                    b.ToTable("ASPNETUSERS", (string)null);
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("EventReservation.Models.Event", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("ID");
+                        .HasColumnType("NUMBER(10)");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CoordinatorName")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("COORDINATORNAME");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("CoordinatorPhone")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("COORDINATORPHONE");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("CoordinatorSurname")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("COORDINATORSURNAME");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("CREATEDAT");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("NVARCHAR2(500)")
-                        .HasColumnName("DESCRIPTION");
+                        .HasColumnType("NVARCHAR2(500)");
 
                     b.Property<DateTime>("EndTime")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("ENDTIME");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<string>("EventEmail")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("NVARCHAR2(100)")
-                        .HasColumnName("EVENTEMAIL");
+                        .HasColumnType("NVARCHAR2(100)");
 
                     b.Property<int>("EventSessionStatus")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("EVENTSESSIONSTATUS");
+                        .HasColumnType("NUMBER(10)");
 
                     b.Property<int>("IsOverLappingAllowed")
-                        .HasColumnType("NUMBER(1)")
-                        .HasColumnName("ISOVERLAPPINGALLOWED");
+                        .HasColumnType("NUMBER(1)");
 
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("NVARCHAR2(100)")
-                        .HasColumnName("LOCATION");
+                        .HasColumnType("NVARCHAR2(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("NVARCHAR2(100)")
-                        .HasColumnName("NAME");
+                        .HasColumnType("NVARCHAR2(100)");
 
                     b.Property<DateTime>("StartTime")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("STARTTIME");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("UPDATEDAT");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<byte[]>("Version")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("RAW(8)")
-                        .HasColumnName("VERSION");
+                        .HasColumnType("RAW(8)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("EVENT");
+                    b.ToTable("Event");
                 });
 
             modelBuilder.Entity("EventReservation.Models.Registration", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("ID");
+                        .HasColumnType("NUMBER(10)");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("CREATEDAT");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<int>("RegistrationStatus")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("REGISTRATIONSTATUS");
+                        .HasColumnType("NUMBER(10)");
 
                     b.Property<int>("SessionId")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("SESSIONID");
+                        .HasColumnType("NUMBER(10)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("UPDATEDAT");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("USERID");
+                        .HasColumnType("NUMBER(10)");
 
                     b.HasKey("Id");
 
@@ -251,261 +212,223 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("REGISTRATION");
+                    b.ToTable("Registration");
                 });
 
             modelBuilder.Entity("EventReservation.Models.Session", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("ID");
+                        .HasColumnType("NUMBER(10)");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("CREATEDAT");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("NVARCHAR2(500)")
-                        .HasColumnName("DESCRIPTION");
+                        .HasColumnType("NVARCHAR2(500)");
 
                     b.Property<int>("Duration")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("DURATION");
+                        .HasColumnType("NUMBER(10)");
 
                     b.Property<int>("EventId")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("EVENTID");
+                        .HasColumnType("NUMBER(10)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("NVARCHAR2(100)")
-                        .HasColumnName("NAME");
+                        .HasColumnType("NVARCHAR2(100)");
 
                     b.Property<DateTime>("StartTime")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("STARTTIME");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("UPDATEDAT");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<byte[]>("Version")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("RAW(8)")
-                        .HasColumnName("VERSION");
+                        .HasColumnType("RAW(8)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("SESSION");
+                    b.ToTable("Session");
                 });
 
             modelBuilder.Entity("EventReservation.Models.SessionLimit", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("ID");
+                        .HasColumnType("NUMBER(10)");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("CREATEDAT");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<int>("CurrentReserved")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("CURRENTRESERVED");
+                        .HasColumnType("NUMBER(10)");
 
                     b.Property<int>("MaxParticipants")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("MAXPARTICIPANTS");
+                        .HasColumnType("NUMBER(10)");
 
                     b.Property<int>("SessionId")
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("SESSIONID");
+                        .HasColumnType("NUMBER(10)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TIMESTAMP(7)")
-                        .HasColumnName("UPDATEDAT");
+                        .HasColumnType("TIMESTAMP(7)");
 
                     b.Property<byte[]>("Version")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("RAW(8)")
-                        .HasColumnName("VERSION");
+                        .HasColumnType("RAW(8)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("SessionId")
                         .IsUnique();
 
-                    b.ToTable("SESSIONLIMIT");
+                    b.ToTable("SessionLimit");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("ID");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("CONCURRENCYSTAMP");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("NVARCHAR2(256)")
-                        .HasColumnName("NAME");
+                        .HasColumnType("NVARCHAR2(256)");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("NVARCHAR2(256)")
-                        .HasColumnName("NORMALIZEDNAME");
+                        .HasColumnType("NVARCHAR2(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("\"NORMALIZEDNAME\" IS NOT NULL");
+                        .HasFilter("\"NormalizedName\" IS NOT NULL");
 
-                    b.ToTable("ASPNETROLES", (string)null);
+                    b.ToTable("AspNetRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("ID");
+                        .HasColumnType("NUMBER(10)");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("CLAIMTYPE");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("CLAIMVALUE");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("ROLEID");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("ASPNETROLECLAIMS", (string)null);
+                    b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("NUMBER(10)")
-                        .HasColumnName("ID");
+                        .HasColumnType("NUMBER(10)");
 
                     OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("CLAIMTYPE");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("CLAIMVALUE");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("USERID");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ASPNETUSERCLAIMS", (string)null);
+                    b.ToTable("AspNetUserClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("LOGINPROVIDER");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("PROVIDERKEY");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("PROVIDERDISPLAYNAME");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("USERID");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ASPNETUSERLOGINS", (string)null);
+                    b.ToTable("AspNetUserLogins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("USERID");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("RoleId")
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("ROLEID");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("ASPNETUSERROLES", (string)null);
+                    b.ToTable("AspNetUserRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("USERID");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("LOGINPROVIDER");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("NVARCHAR2(450)")
-                        .HasColumnName("NAME");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("Value")
-                        .HasColumnType("NVARCHAR2(2000)")
-                        .HasColumnName("VALUE");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("ASPNETUSERTOKENS", (string)null);
+                    b.ToTable("AspNetUserTokens", (string)null);
                 });
 
             modelBuilder.Entity("EventReservation.Models.Registration", b =>
