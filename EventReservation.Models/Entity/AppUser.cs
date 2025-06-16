@@ -13,6 +13,6 @@ public class AppUser : IdentityUser
     [MaxLength(50)]
     public string? LastName { get; set; }
 
-    [MaxLength(50)]
+    [MaxLength(100)]
     public string? Country { get; set; }
 }
