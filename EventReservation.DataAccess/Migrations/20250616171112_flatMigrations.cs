@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EventReservation.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class MigrationForDatabaseUpdate : Migration
+    public partial class flatMigrations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -66,8 +66,8 @@ namespace EventReservation.DataAccess.Migrations
                     Description = table.Column<string>(type: "NVARCHAR2(500)", maxLength: 500, nullable: false),
                     StartTime = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
                     EndTime = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
-                    Location = table.Column<string>(type: "NVARCHAR2(50)", maxLength: 50, nullable: false),
-                    EventEmail = table.Column<string>(type: "NVARCHAR2(50)", maxLength: 50, nullable: false),
+                    Location = table.Column<string>(type: "NVARCHAR2(100)", maxLength: 100, nullable: false),
+                    EventEmail = table.Column<string>(type: "NVARCHAR2(100)", maxLength: 100, nullable: false),
                     EventSessionStatus = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     IsOverLappingAllowed = table.Column<int>(type: "NUMBER(1)", nullable: false),
                     CoordinatorName = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
@@ -195,7 +195,7 @@ namespace EventReservation.DataAccess.Migrations
                     Id = table.Column<int>(type: "NUMBER(10)", nullable: false)
                         .Annotation("Oracle:Identity", "START WITH 1 INCREMENT BY 1"),
                     EventId = table.Column<int>(type: "NUMBER(10)", nullable: false),
-                    Name = table.Column<string>(type: "NVARCHAR2(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "NVARCHAR2(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "NVARCHAR2(500)", maxLength: 500, nullable: false),
                     StartTime = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
                     Duration = table.Column<int>(type: "NUMBER(10)", nullable: false),

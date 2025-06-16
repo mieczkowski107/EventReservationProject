@@ -144,8 +144,8 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.Property<string>("EventEmail")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("NVARCHAR2(100)");
 
                     b.Property<int>("EventSessionStatus")
                         .HasColumnType("NUMBER(10)");
@@ -155,8 +155,8 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.Property<string>("Location")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("NVARCHAR2(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -177,7 +177,7 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Event", (string)null);
+                    b.ToTable("Event");
                 });
 
             modelBuilder.Entity("EventReservation.Models.Registration", b =>
@@ -209,7 +209,7 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Registration", (string)null);
+                    b.ToTable("Registration");
                 });
 
             modelBuilder.Entity("EventReservation.Models.Session", b =>
@@ -236,8 +236,8 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("NVARCHAR2(100)");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("TIMESTAMP(7)");
@@ -255,7 +255,7 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("Session", (string)null);
+                    b.ToTable("Session");
                 });
 
             modelBuilder.Entity("EventReservation.Models.SessionLimit", b =>
@@ -292,7 +292,7 @@ namespace EventReservation.DataAccess.Migrations
                     b.HasIndex("SessionId")
                         .IsUnique();
 
-                    b.ToTable("SessionLimit", (string)null);
+                    b.ToTable("SessionLimit");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -431,7 +431,7 @@ namespace EventReservation.DataAccess.Migrations
             modelBuilder.Entity("EventReservation.Models.Registration", b =>
                 {
                     b.HasOne("EventReservation.Models.Session", "Session")
-                        .WithMany()
+                        .WithMany("Registrations")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -528,6 +528,8 @@ namespace EventReservation.DataAccess.Migrations
 
             modelBuilder.Entity("EventReservation.Models.Session", b =>
                 {
+                    b.Navigation("Registrations");
+
                     b.Navigation("SessionLimit");
                 });
 #pragma warning restore 612, 618

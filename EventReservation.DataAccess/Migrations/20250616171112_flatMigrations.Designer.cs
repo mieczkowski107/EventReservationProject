@@ -12,8 +12,8 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace EventReservation.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250616082124_MigrationForDatabaseUpdate")]
-    partial class MigrationForDatabaseUpdate
+    [Migration("20250616171112_flatMigrations")]
+    partial class flatMigrations
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -147,8 +147,8 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.Property<string>("EventEmail")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("NVARCHAR2(100)");
 
                     b.Property<int>("EventSessionStatus")
                         .HasColumnType("NUMBER(10)");
@@ -158,8 +158,8 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.Property<string>("Location")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("NVARCHAR2(100)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -239,8 +239,8 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("NVARCHAR2(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("NVARCHAR2(100)");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("TIMESTAMP(7)");
@@ -434,7 +434,7 @@ namespace EventReservation.DataAccess.Migrations
             modelBuilder.Entity("EventReservation.Models.Registration", b =>
                 {
                     b.HasOne("EventReservation.Models.Session", "Session")
-                        .WithMany()
+                        .WithMany("Registrations")
                         .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -531,6 +531,8 @@ namespace EventReservation.DataAccess.Migrations
 
             modelBuilder.Entity("EventReservation.Models.Session", b =>
                 {
+                    b.Navigation("Registrations");
+
                     b.Navigation("SessionLimit");
                 });
 #pragma warning restore 612, 618
