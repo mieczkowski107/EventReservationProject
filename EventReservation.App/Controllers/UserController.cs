@@ -15,6 +15,7 @@ namespace EventReservation.App.Controllers;
 public class UserController(
     UserManager<AppUser> userManager,
     SignInManager<AppUser> signInManager,
+    RoleManager<IdentityRole> roleManager,
     TokenProvider tokenProvider) : ControllerBase
 {
 
@@ -47,6 +48,11 @@ public class UserController(
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest registerRequest)
     {
+        if(roleManager.Roles.Count() == 0)
+        {
+            await roleManager.CreateAsync(new IdentityRole(nameof(Roles.Admin)));
+            await roleManager.CreateAsync(new IdentityRole(nameof(Roles.Client)));
+        }
         var userExists = await userManager.FindByEmailAsync(registerRequest.Email!);
         if (userExists != null)
         {
