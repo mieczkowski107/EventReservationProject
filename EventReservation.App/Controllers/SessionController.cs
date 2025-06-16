@@ -1,5 +1,8 @@
-﻿using EventReservation.DataAccess;
+﻿using EventReservation.App.Services.Interfaces;
+using EventReservation.DataAccess;
 using EventReservation.Models;
+using EventReservation.Models.DTO.Event;
+using EventReservation.Models.DTO.Page;
 using EventReservation.Models.DTO.Session;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,27 +11,56 @@ namespace EventReservation.App.Controllers;
 
 [ApiController]
 //[Authorize(Roles = nameof(Roles.Admin))]
-public class SessionController(AppDbContext dbContext) : ControllerBase
+public class SessionController(AppDbContext dbContext, IOverlappingService overlappingService) : ControllerBase
 {
-    [HttpGet("api/event/{eventId:guid}/sessions")]
-    public async Task<IActionResult> GetSessions(Guid eventId)
+    [HttpGet("api/event/{eventId:int}/sessions")]
+    public async Task<IActionResult> GetSessions(int eventId, int page = 1, int pageSize = 10)
     {
-        var sessions = await dbContext.Session.Where(s => s.EventId == eventId).ToListAsync();
-        var sessionDto = sessions.Select(x => new SessionDto
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        var totalCount = await dbContext.Session.CountAsync(s => s.EventId == eventId);
+
+        //TODO: dodać index na StartTime, w celu przyspieszenia OrderBy
+
+        var sessions = await dbContext.Session
+            .Where(s => s.EventId == eventId)
+            .Include(s => s.SessionLimit)
+            .OrderBy(s => s.StartTime)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        //TODO: Dodać tu sessionLimit, bo nie mam pomysłu jak
+        var sessionDto = sessions.Select(x => new SessionWithLimitDto
         {
             Id = x.Id,
             Name = x.Name,
             StartTime = x.StartTime,
             Duration = x.Duration,
-        }
-        ).ToList();
-        return Ok(sessionDto);
+            MaxParticipants = x.SessionLimit?.MaxParticipants ?? 0,
+            CurrentReserved = x.SessionLimit?.CurrentReserved ?? 0,
+        }).ToList();
+
+        var result = new PagedResult<SessionWithLimitDto>
+        {
+            Items = sessionDto,
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+            PageCount = (int)Math.Ceiling((double)totalCount / pageSize)
+        };
+
+        return Ok(result);
     }
 
-    [HttpGet("api/sessions/{sessionId:guid}")]
-    public async Task<IActionResult> GetSingleSession(Guid sessionId)
+    [HttpGet("api/sessions/{sessionId:int}")]
+    public async Task<IActionResult> GetSingleSession(int sessionId)
     {
         var session = await dbContext.Session.FindAsync(sessionId);
+        // Wyświetlenie limitu uczestników - działa, ale zastanawiam się czy nie można zrobić jakoś include do session bez drugiego zapytania
+        var sessionLimit = await dbContext.SessionLimit.Where(sl => sl.SessionId == sessionId).FirstOrDefaultAsync();
+
         if (session == null)
         {
             return NotFound();
@@ -40,36 +72,31 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
             Name = session.Name,
             StartTime = session.StartTime,
             Duration = session.Duration,
+            MaxParticipants = sessionLimit.MaxParticipants,
         };
         return Ok(sessionDto);
     }
 
-    [HttpPost("api/event/{eventId:guid}/sessions")]
-    public async Task<IActionResult> CreateSession(Guid eventId, [FromBody] SessionDto newSession)
+    [HttpPost("api/event/{eventId:int}/sessions")]
+    public async Task<IActionResult> CreateSession(int eventId, [FromBody] SessionDto newSession)
     {
         var eventFromDb = await dbContext.Event.Include(e => e.Sessions).Where(e => e.Id == eventId).FirstOrDefaultAsync();
         if (eventFromDb == null)
         {
             return BadRequest("No event");
         }
-        var createdSessionStartTime = newSession.StartTime;
-        var createdSessionEndTime = createdSessionStartTime.AddMinutes(newSession.Duration);
-        //TODO: Sprawdzić poprawność działania
-        if (!(newSession.StartTime >= eventFromDb.StartTime && createdSessionEndTime <= eventFromDb.EndTime))
+
+        if (!IsSessionTimeWithinEventRange(eventFromDb, newSession))
         {
             return BadRequest("Invalid session time");
         }
 
-        //TODO: Sprawdzić, poprawność działania 
         if (!eventFromDb.IsOverLappingAllowed && eventFromDb.Sessions != null)
         {
             var sessions = eventFromDb.Sessions;
-            foreach (var session in sessions)
+            if (overlappingService.AreSessionsOverlapping(sessions, newSession))
             {
-                if(IsSessionOverlapping(session, newSession))
-                {
-                    return BadRequest("Session time overlaps with existing session");
-                }
+                return BadRequest("Session time overlaps with existing session");
             }
         }
 
@@ -81,29 +108,56 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
             StartTime = newSession.StartTime,
             Duration = newSession.Duration,
         };
+
         await dbContext.Session.AddAsync(createdSession);
         await dbContext.SaveChangesAsync();
-        //TODO: Zwrócić DTO zamiast encji
-        return CreatedAtAction(nameof(GetSingleSession), new { sessionId = createdSession.Id }, createdSession);
+
+        var sessionLimit = new SessionLimit
+        {
+            SessionId = createdSession.Id,
+            MaxParticipants = newSession.MaxParticipants,
+            CurrentReserved = 0
+        };
+
+        await dbContext.SessionLimit.AddAsync(sessionLimit);
+        await dbContext.SaveChangesAsync();
+
+        //TODO: Poprawione Id, bo zwracało z Dto zamiast poprawnego z bazy, nie wiem czy tak czy inaczej to zrobić
+        newSession.Id = createdSession.Id;
+
+        //return CreatedAtAction(nameof(GetSingleSession), new { sessionId = createdSession.Id }, createdSession);
+        return Ok(newSession);
     }
 
-    [HttpPut("api/sessions/{sessionId:guid}")]
-    public async Task<IActionResult> UpdateSession(Guid sessionId, [FromBody] UpdateSessionDto updatedSession)
+    [HttpPut("api/sessions/{sessionId:int}")]
+    public async Task<IActionResult> UpdateSession(int sessionId, [FromBody] UpdateSessionDto updatedSession)
     {
-        var sessionFromDb = await dbContext.Session.FindAsync(sessionId);
-        if (sessionFromDb == null)
-        {
+        var sessionFromDb = await dbContext.Session
+                                 .Include(s => s.Event)
+                                 .ThenInclude(e => e.Sessions)
+                                 .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+        if (sessionFromDb == null || sessionFromDb.Event == null)
             return NotFound();
-        }
-        //TODO: Pamiętać o sprawdzaniu timestampa.
-        //Cel: Unikanie 'podwójnego' aktualizowanai tej samej encji np. przez dwóch adminów w tym samym czasie 
-        dbContext.Entry(sessionFromDb).CurrentValues.SetValues(updatedSession);
+
+        MapSessionDtoToEntity(updatedSession, sessionFromDb);
+
+        if (!IsSessionTimeWithinEventRange(sessionFromDb.Event, sessionFromDb))
+            return BadRequest("Invalid session time");
+
+        var otherSessions = sessionFromDb.Event.Sessions
+                                                .Where(s => s.Id != sessionId)
+                                                .ToList();
+
+        if (overlappingService.AreSessionsOverlapping(otherSessions, sessionFromDb))
+            return BadRequest("Session time overlaps with existing session");
+
         await dbContext.SaveChangesAsync();
         return Ok(sessionFromDb);
     }
 
-    [HttpDelete("api/sessions/{sessionId:guid}")]
-    public async Task<IActionResult> DeleteSession(Guid sessionId)
+    [HttpDelete("api/sessions/{sessionId:int}")]
+    public async Task<IActionResult> DeleteSession(int sessionId)
     {
         var session = await dbContext.Session.FindAsync(sessionId);
         if (session == null)
@@ -116,12 +170,28 @@ public class SessionController(AppDbContext dbContext) : ControllerBase
         return NoContent();
     }
 
-    private bool IsSessionOverlapping(Session session, SessionDto newSession)
+    private void MapSessionDtoToEntity(UpdateSessionDto sessionDto, Session session)
     {
-        var sessionStartTime = session.StartTime;
-        var sessionEndTime = session.StartTime.AddMinutes(session.Duration);
-        var newSessionStartTime = newSession.StartTime;
-        var newSessionEndTime = newSession.StartTime.AddMinutes(newSession.Duration);
-        return newSessionStartTime < sessionEndTime && newSessionEndTime > sessionStartTime;
+        session.Name = sessionDto.Name;
+        session.Description = sessionDto.Description;
+        session.StartTime = sessionDto.StartTime ?? session.StartTime;
+        session.Duration = sessionDto.Duration ?? session.Duration;
     }
+    private bool IsSessionTimeWithinEventRange(Event eventFromDb, SessionDto newSession)
+    {
+        var createdSessionStartTime = newSession.StartTime;
+        var createdSessionEndTime = createdSessionStartTime.AddMinutes(newSession.Duration);
+
+        return createdSessionStartTime >= eventFromDb.StartTime &&
+               createdSessionEndTime <= eventFromDb.EndTime;
+    }
+    private bool IsSessionTimeWithinEventRange(Event eventFromDb, Session newSession)
+    {
+        var createdSessionStartTime = newSession.StartTime;
+        var createdSessionEndTime = createdSessionStartTime.AddMinutes(newSession.Duration);
+
+        return createdSessionStartTime >= eventFromDb.StartTime &&
+               createdSessionEndTime <= eventFromDb.EndTime;
+    }
+
 }

@@ -1,4 +1,5 @@
 using EventReservation.App.Services;
+using EventReservation.App.Services.Interfaces;
 using EventReservation.DataAccess;
 using EventReservation.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,8 +22,13 @@ public class Program
         builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection"))
                 .EnableSensitiveDataLogging());
-        builder.Services.AddSingleton<TokenProvider>();
 
+        // Registering services
+        builder.Services.AddSingleton<TokenProvider>();
+        //builder.Services.AddTransient<DbSeeder>();
+        builder.Services.AddScoped<IOverlappingService, OverlappingService>();
+
+        //Registering Identity services
         builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
                 {
                     options.Password.RequireDigit = false;
@@ -62,16 +68,17 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
 
+        //Swagger configuration
 
-        builder.Services.AddSwaggerGen(options =>
-        {
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "Event Reservation API", Version = "v1" });
+        /*  builder.Services.AddSwaggerGen(options =>
+          {
+              options.SwaggerDoc("v1", new OpenApiInfo { Title = "Event Reservation API", Version = "v1" });
 
-        });
+          });*/
 
         // Uncomment the following lines to enable Swagger with JWT authentication and comment out the above AddSwaggerGen call
-        /* 
-          builder.Services.AddSwaggerGen(option =>
+
+        builder.Services.AddSwaggerGen(option =>
           {
               option.SwaggerDoc("v1", new OpenApiInfo { Title = "Event Reservation API", Version = "v1" });
               option.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
@@ -98,7 +105,7 @@ public class Program
                   }
               });
           });
-        */
+        
 
         var app = builder.Build();
 
@@ -121,6 +128,15 @@ public class Program
 
         app.MapControllers();
 
+        //using (var scope = app.Services.CreateScope())
+        //{
+        //    var services = scope.ServiceProvider;
+        //    var seeder = services.GetRequiredService<DbSeeder>();
+        //    seeder.Seed();
+        //}
+
         app.Run();
+
+       
     }
 }

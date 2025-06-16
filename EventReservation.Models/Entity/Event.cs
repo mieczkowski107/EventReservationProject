@@ -5,8 +5,8 @@ namespace EventReservation.Models;
 
 public class Event
 {
-    public Guid Id { get; set; }
-    [Required] [MaxLength(50)] public string? Name { get; set; }
+    public int Id { get; set; }
+    [Required] [MaxLength(100)] public string? Name { get; set; }
     [Required] [MaxLength(500)] public string? Description { get; set; }
     [Required] public DateTime StartTime { get; set; }
     [Required] public DateTime EndTime { get; set; }
@@ -20,4 +20,6 @@ public class Event
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public virtual ICollection<Session>? Sessions { get; set; }
+    [Timestamp]
+    public byte[] Version { get; set; }
 }
