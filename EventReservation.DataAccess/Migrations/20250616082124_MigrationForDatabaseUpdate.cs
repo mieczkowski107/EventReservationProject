@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EventReservation.DataAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class GuidToInt : Migration
+    public partial class MigrationForDatabaseUpdate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -62,7 +62,7 @@ namespace EventReservation.DataAccess.Migrations
                 {
                     Id = table.Column<int>(type: "NUMBER(10)", nullable: false)
                         .Annotation("Oracle:Identity", "START WITH 1 INCREMENT BY 1"),
-                    Name = table.Column<string>(type: "NVARCHAR2(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "NVARCHAR2(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "NVARCHAR2(500)", maxLength: 500, nullable: false),
                     StartTime = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
                     EndTime = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
@@ -74,7 +74,8 @@ namespace EventReservation.DataAccess.Migrations
                     CoordinatorSurname = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     CoordinatorPhone = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
+                    Version = table.Column<byte[]>(type: "RAW(8)", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -199,7 +200,8 @@ namespace EventReservation.DataAccess.Migrations
                     StartTime = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
                     Duration = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
+                    Version = table.Column<byte[]>(type: "RAW(8)", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -251,7 +253,8 @@ namespace EventReservation.DataAccess.Migrations
                     MaxParticipants = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     CurrentReserved = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "TIMESTAMP(7)", nullable: false),
+                    Version = table.Column<byte[]>(type: "RAW(8)", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -321,7 +324,8 @@ namespace EventReservation.DataAccess.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_SessionLimit_SessionId",
                 table: "SessionLimit",
-                column: "SessionId");
+                column: "SessionId",
+                unique: true);
         }
 
         /// <inheritdoc />

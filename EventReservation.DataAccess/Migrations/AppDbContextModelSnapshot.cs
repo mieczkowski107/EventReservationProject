@@ -177,7 +177,7 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Event");
+                    b.ToTable("Event", (string)null);
                 });
 
             modelBuilder.Entity("EventReservation.Models.Registration", b =>
@@ -209,7 +209,7 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Registration");
+                    b.ToTable("Registration", (string)null);
                 });
 
             modelBuilder.Entity("EventReservation.Models.Session", b =>
@@ -255,7 +255,7 @@ namespace EventReservation.DataAccess.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("Session");
+                    b.ToTable("Session", (string)null);
                 });
 
             modelBuilder.Entity("EventReservation.Models.SessionLimit", b =>
@@ -292,7 +292,7 @@ namespace EventReservation.DataAccess.Migrations
                     b.HasIndex("SessionId")
                         .IsUnique();
 
-                    b.ToTable("SessionLimit");
+                    b.ToTable("SessionLimit", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
