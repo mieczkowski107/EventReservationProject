@@ -12,6 +12,11 @@ using Utility;
 namespace EventReservation.DataAccess;
 public class DbSeeder
 {
+    private const int QUANTITY_OF_EVENTS= 10;
+    private const int QUANTITY_OF_USERS= 10;
+    private const int MAX_SESSION_REGISTER_PER_USER= 20;
+
+
     private readonly UserManager<AppUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly AppDbContext _db;
@@ -88,7 +93,7 @@ public class DbSeeder
              .RuleFor(e => e.CoordinatorSurname, f => f.Name.LastName())
              .RuleFor(e => e.CoordinatorPhone, f => f.Phone.PhoneNumber());
 
-        var events = faker.Generate(10);
+        var events = faker.Generate(QUANTITY_OF_EVENTS);
         return events;
     }
 
@@ -174,7 +179,7 @@ public class DbSeeder
              .RuleFor(u => u.Phone, f => f.Phone.PhoneNumber())
              .RuleFor(u => u.Country, f => f.Address.Country());
 
-        var users = faker.Generate(10);
+        var users = faker.Generate(QUANTITY_OF_USERS);
 
         users.ForEach(users =>
         {
@@ -227,7 +232,7 @@ public class DbSeeder
                     userSessions[user.Id].Add((start, end));
                     assignedCount++;
 
-                    if (assignedCount >= 20) break;
+                    if (assignedCount >= MAX_SESSION_REGISTER_PER_USER) break;
                 }
             }
         }
