@@ -6,6 +6,7 @@ using EventReservation.Models.DTO.Page;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Oracle.ManagedDataAccess.Client;
 
 namespace EventReservation.App.Controllers;
 
@@ -57,37 +58,45 @@ public class EventController(AppDbContext dbContext, IOverlappingService overlap
         return Ok(result);
     }
 
-   [HttpGet("{id:int}")]
-   public async Task<IActionResult> GetEvent(int id) // PL/SQL: Procedura
-   {
-      var eventFromDb = await dbContext.Event.FindAsync(id);
-      if (eventFromDb == null)
-      {
-         return NotFound("Event not found");
-      }
-      var eventToReturn = new EventDto
-      {
-         Id = eventFromDb.Id,
-         Name = eventFromDb.Name,
-         Description = eventFromDb.Description,
-         StartTime = eventFromDb.StartTime,
-         EndTime = eventFromDb.EndTime,
-         Location = eventFromDb.Location,
-         EventEmail = eventFromDb.EventEmail,
-         IsOverLappingAllowed = eventFromDb.IsOverLappingAllowed,
-         CoordinatorName = eventFromDb.CoordinatorName,
-         CoordinatorSurname = eventFromDb.CoordinatorSurname,
-         CoordinatorPhone = eventFromDb.CoordinatorPhone,
-      };
-      return Ok(eventToReturn);
-   }
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetEvent(int id)
+    {
+        try
+        {
+            dbContext.Database.ExecuteSqlInterpolated($"BEGIN EVENT_PKG.EVENT_EXISTS({id}); END;");
+        }
+        catch (OracleException ex)
+        {
+            return NotFound();
+        }
+
+        var eventFromDb = await dbContext.Event.FindAsync(id);
+        if (eventFromDb == null)
+        {
+            return NotFound("Event not found");
+        }
+        var eventToReturn = new EventDto
+        {
+            Id = eventFromDb.Id,
+            Name = eventFromDb.Name,
+            Description = eventFromDb.Description,
+            StartTime = eventFromDb.StartTime,
+            EndTime = eventFromDb.EndTime,
+            Location = eventFromDb.Location,
+            EventEmail = eventFromDb.EventEmail,
+            IsOverLappingAllowed = eventFromDb.IsOverLappingAllowed,
+            CoordinatorName = eventFromDb.CoordinatorName,
+            CoordinatorSurname = eventFromDb.CoordinatorSurname,
+            CoordinatorPhone = eventFromDb.CoordinatorPhone,
+        };
+        return Ok(eventToReturn);
+    }
 
     [HttpPost]
-    public async Task<IActionResult> CreateEvent([FromBody] EventDto newEvent) // PL/SQL: Procedura
+    public async Task<IActionResult> CreateEvent([FromBody] EventDto newEvent)
     {
         var createdEvent = new Event
         {
-            Id = newEvent.Id,
             Name = newEvent.Name,
             Description = newEvent.Description,
             StartTime = newEvent.StartTime,
@@ -106,9 +115,9 @@ public class EventController(AppDbContext dbContext, IOverlappingService overlap
     }
 
     [HttpPatch("{id:int}")]
-    public async Task<IActionResult> UpdateEvent(int id, [FromBody] UpdateEventDto updatedEvent) // PL/SQL: Procedura
+    public async Task<IActionResult> UpdateEvent(int id, [FromBody] UpdateEventDto updatedEvent) 
     {
-        var eventFromDb = await dbContext.Event.Include(s=>s.Sessions).FirstOrDefaultAsync(e => e.Id == id);
+        var eventFromDb = await dbContext.Event.Include(s => s.Sessions).FirstOrDefaultAsync(e => e.Id == id);
         if (eventFromDb == null)
         {
             return NotFound("Event not found");
@@ -159,15 +168,32 @@ public class EventController(AppDbContext dbContext, IOverlappingService overlap
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteEvent(int id) // PL/SQL: Procedura
+    public async Task<IActionResult> DeleteEvent(int id)  //PLSQL 
     {
-        var eventFromDb = await dbContext.Event.FindAsync(id);
-        if (eventFromDb == null)
+
+        try
         {
-            return NotFound("Event not found");
+            dbContext.Database.ExecuteSqlInterpolated($"BEGIN EVENT_PKG.DELETE_EVENT({id}); END;");
         }
-        dbContext.Event.Remove(eventFromDb);
-        await dbContext.SaveChangesAsync();
+        catch (OracleException ex)
+        {
+            if (ex.Number >= 20000 && ex.Number <= 20999)
+            {
+                switch (ex.Number)
+                {
+                    case 20010: // 'Sesja o podanym ID nie istnieje.'
+                        return NotFound(ex.Message);
+
+                    case 20011: // 'Nie można zapisać się na sesję, która już się odbyła.'
+                    case 20012: // 'Użytkownik jest już zarejestrowany na tę sesję.'
+                    case 20013: // 'Sesja jest pełna. Brak wolnych miejsc.'
+                        return BadRequest(ex.Message); // 400 Bad Request
+
+                    default:
+                        return StatusCode(500, $"An application error occurred: {ex.Message}");
+                }
+            }
+        }
         return NoContent();
     }
 
@@ -186,8 +212,3 @@ public class EventController(AppDbContext dbContext, IOverlappingService overlap
     }
 
 }
-
-//TODO: PL/SQL
-// - Funkcja sprawdzająca czy istnieje dany event
-// - MOŻE: Ustalić limit Eventów w tej samej lokalizacji? Wtedy byłby trigger
-// - 

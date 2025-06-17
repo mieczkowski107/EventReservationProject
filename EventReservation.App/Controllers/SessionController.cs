@@ -6,6 +6,9 @@ using EventReservation.Models.DTO.Page;
 using EventReservation.Models.DTO.Session;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
+using Oracle.ManagedDataAccess.Client;
+using System.Data;
 
 namespace EventReservation.App.Controllers;
 
@@ -31,7 +34,6 @@ public class SessionController(AppDbContext dbContext, IOverlappingService overl
             .Take(pageSize)
             .ToListAsync();
 
-        //TODO: Dodać tu sessionLimit, bo nie mam pomysłu jak
         var sessionDto = sessions.Select(x => new SessionWithLimitDto
         {
             Id = x.Id,
@@ -57,11 +59,12 @@ public class SessionController(AppDbContext dbContext, IOverlappingService overl
     [HttpGet("api/sessions/{sessionId:int}")]
     public async Task<IActionResult> GetSingleSession(int sessionId)
     {
-        var session = await dbContext.Session.FindAsync(sessionId);
-        // Wyświetlenie limitu uczestników - działa, ale zastanawiam się czy nie można zrobić jakoś include do session bez drugiego zapytania
-        var sessionLimit = await dbContext.SessionLimit.Where(sl => sl.SessionId == sessionId).FirstOrDefaultAsync();
 
-        if (session == null)
+        var session = await dbContext.Session
+                                    .Include(s => s.SessionLimit)
+                                    .FirstOrDefaultAsync(s => s.Id == sessionId);
+
+        if (session == null || session.SessionLimit == null)
         {
             return NotFound();
         }
@@ -72,61 +75,62 @@ public class SessionController(AppDbContext dbContext, IOverlappingService overl
             Name = session.Name,
             StartTime = session.StartTime,
             Duration = session.Duration,
-            MaxParticipants = sessionLimit.MaxParticipants,
+            MaxParticipants = session.SessionLimit!.MaxParticipants,
         };
         return Ok(sessionDto);
     }
 
     [HttpPost("api/event/{eventId:int}/sessions")]
-    public async Task<IActionResult> CreateSession(int eventId, [FromBody] SessionDto newSession)
+    public async Task<IActionResult> CreateSession(int eventId, [FromBody] SessionDto newSession) //PLSQL
     {
-        var eventFromDb = await dbContext.Event.Include(e => e.Sessions).Where(e => e.Id == eventId).FirstOrDefaultAsync();
-        if (eventFromDb == null)
-        {
-            return BadRequest("No event");
-        }
+        var eventIdParam = new OracleParameter("p_event_id", eventId);
+        var nameParam = new OracleParameter("p_name", newSession.Name);
+        var descriptionParam = new OracleParameter("p_description", newSession.Description);
+        var startTimeParam = new OracleParameter("p_start_time", newSession.StartTime);
+        var durationParam = new OracleParameter("p_duration", newSession.Duration);
+        var maxParticipantsParam = new OracleParameter("p_max_participants", newSession.MaxParticipants);
+        var newSessionIdParam = new OracleParameter("p_new_session_id", OracleDbType.Int32, ParameterDirection.Output);
 
-        if (!IsSessionTimeWithinEventRange(eventFromDb, newSession))
+        try
         {
-            return BadRequest("Invalid session time");
-        }
+            await dbContext.Database.ExecuteSqlRawAsync(
+                @"BEGIN 
+                  SESSION_PKG.CREATE_SESSION(
+                      p_event_id         => :p_event_id,
+                      p_name             => :p_name,
+                      p_description      => :p_description,
+                      p_start_time       => :p_start_time,
+                      p_duration         => :p_duration,
+                      p_max_participants => :p_max_participants,
+                      p_new_session_id   => :p_new_session_id
+                  );
+              END;",
+                eventIdParam, nameParam, descriptionParam, startTimeParam, durationParam, maxParticipantsParam, newSessionIdParam);
 
-        if (!eventFromDb.IsOverLappingAllowed && eventFromDb.Sessions != null)
+            var newId = Convert.ToInt32(newSessionIdParam.Value.ToString());
+
+            newSession.Id = newId;
+
+            return Ok(newSession);
+        }
+        catch (OracleException ex)
         {
-            var sessions = eventFromDb.Sessions;
-            if (overlappingService.AreSessionsOverlapping(sessions, newSession))
+            if (ex.Number >= 20000 && ex.Number <= 20999)
             {
-                return BadRequest("Session time overlaps with existing session");
+                switch (ex.Number)
+                {
+                    case 20001: 
+                        return NotFound(ex.Message);
+
+                    case 20002: 
+                        return BadRequest(ex.Message);
+
+                    default:
+                        return StatusCode(500);
+                }
             }
+            return StatusCode(500);
         }
-
-        var createdSession = new Session
-        {
-            EventId = eventId,
-            Name = newSession.Name,
-            Description = newSession.Description,
-            StartTime = newSession.StartTime,
-            Duration = newSession.Duration,
-        };
-
-        await dbContext.Session.AddAsync(createdSession);
-        await dbContext.SaveChangesAsync();
-
-        var sessionLimit = new SessionLimit
-        {
-            SessionId = createdSession.Id,
-            MaxParticipants = newSession.MaxParticipants,
-            CurrentReserved = 0
-        };
-
-        await dbContext.SessionLimit.AddAsync(sessionLimit);
-        await dbContext.SaveChangesAsync();
-
-        //TODO: Poprawione Id, bo zwracało z Dto zamiast poprawnego z bazy, nie wiem czy tak czy inaczej to zrobić
-        newSession.Id = createdSession.Id;
-
-        //return CreatedAtAction(nameof(GetSingleSession), new { sessionId = createdSession.Id }, createdSession);
-        return Ok(newSession);
     }
 
     [HttpPut("api/sessions/{sessionId:int}")]
